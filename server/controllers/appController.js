@@ -91,9 +91,9 @@ export async function register(req, res) {
 }
 
 /** PUT: http://localhost:8080/api/registerMail */
-export async function registerMail(req, res) {
-  res.json('registerMail route');
-}
+// export async function registerMail(req, res) {
+//   res.json('registerMail route');
+// }
 
 /** POST: http://localhost:8080/api/login 
  * @param: {
