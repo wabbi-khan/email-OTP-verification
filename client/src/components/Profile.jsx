@@ -1,27 +1,44 @@
 import React, { useState } from 'react';
 import styles from '../styles/Username.module.css';
+import { useNavigate } from 'react-router-dom';
 import extend from '../styles/Profile.module.css';
 import avatar from '../assets/profile.png';
-import { Link } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { useFormik } from 'formik';
 import convertToBase64 from '../helper/Convert';
 import { profileValidation } from '../helper/Validate';
+import useFetch from '../hooks/fetch.hook';
+// import { useAuthStore } from '../store/store';
+import { updateUser } from '../helper/helper';
 const Profile = () => {
   const [file, setFile] = useState();
+  const navigate = useNavigate();
+
+  // const { username } = useAuthStore((state) => state.auth);
+
+  const [{ isLoading, apiData, serverData }] = useFetch();
   const formik = useFormik({
     initialValues: {
-      firstName: '',
-      lastName: '',
-      email: 'kwahab789@gmail.com',
-      mobile: 'wahab123',
-      address: 'wahab@123',
+      firstName: apiData?.firstName || '',
+      lastName: apiData?.lastName || '',
+      email: apiData?.email || '',
+      mobile: apiData?.mobile || '',
+      address: apiData?.address || '',
     },
+    enableReinitialize: true,
     validate: profileValidation,
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      values = await Object.assign(values, { profile: file || '' });
+      values = await Object.assign(values, {
+        profile: file || apiData?.profile || '',
+      });
+      let updatePromis = updateUser(values);
+      toast.promise(updatePromis, {
+        loading: 'Updating...!',
+        success: <b>Update Successfully...!</b>,
+        error: <b>Could not update...!</b>,
+      });
       console.log(values);
     },
   });
@@ -30,6 +47,16 @@ const Profile = () => {
     const base64 = await convertToBase64(e.target.files[0]);
     setFile(base64);
   };
+
+  // logout handler function
+  function userLogout() {
+    localStorage.removeItem('token');
+    navigate('/');
+  }
+  if (isLoading)
+    return <h1 className="text-2xl text-center font-bold">Is Loading</h1>;
+  if (serverData)
+    return <h1 className="text-xl text-red-500">{serverData.message}</h1>;
   return (
     <div className="container mx-auto py-2">
       <Toaster position="top-center" reverseOrder={false}></Toaster>
@@ -46,7 +73,7 @@ const Profile = () => {
             <div className="profile flex justify-center py-4">
               <label htmlFor="profile">
                 <img
-                  src={file || avatar}
+                  src={apiData?.profile || file || avatar}
                   className={`${styles.profile_img} ${extend.profile_img}`}
                   alt="avatar"
                 />
@@ -102,9 +129,9 @@ const Profile = () => {
             <div className="text-center pt-2">
               <span className="text-gray-500">
                 Come back later ? {''}
-                <Link className="text-red-500" to="/">
+                <button onClick={userLogout} className="text-red-500" to="/">
                   Logout
-                </Link>
+                </button>
               </span>
             </div>
           </form>
