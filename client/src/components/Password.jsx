@@ -79,7 +79,7 @@ const Password = () => {
             <div className="text-center pt-2">
               <span className="text-gray-500">
                 Forget Password ? {''}
-                <Link className="text-red-500" to="/register">
+                <Link className="text-red-500" to="/recovery">
                   Recover Now
                 </Link>
               </span>
